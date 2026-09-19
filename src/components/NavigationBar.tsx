@@ -8,7 +8,8 @@ import {
   Search,
   ExternalLink,
   ShieldCheck,
-  Globe
+  Globe,
+  Bookmark as BookmarkIcon
 } from 'lucide-react';
 
 interface NavigationBarProps {
@@ -17,6 +18,8 @@ interface NavigationBarProps {
   canGoForward: boolean;
   isLoading: boolean;
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  isBookmarksOpen?: boolean;
+  onToggleBookmarks: () => void;
   onNavigate: (url: string) => void;
   onBack: () => void;
   onForward: () => void;
@@ -30,6 +33,8 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   canGoForward,
   isLoading,
   inputRef,
+  isBookmarksOpen,
+  onToggleBookmarks,
   onNavigate,
   onBack,
   onForward,
@@ -185,6 +190,20 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
 
       {/* Quick Status / Actions */}
       <div className="flex items-center gap-1 shrink-0">
+        <button
+          id="btn-nav-bookmarks"
+          type="button"
+          onClick={onToggleBookmarks}
+          title="Bookmarks (Ctrl+B)"
+          className={`p-2 rounded-md transition-colors ${
+            isBookmarksOpen
+              ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
+              : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
+          }`}
+        >
+          <BookmarkIcon className="w-4 h-4" />
+        </button>
+
         <a
           id="btn-open-external"
           href={currentUrl.startsWith('http') ? currentUrl : undefined}

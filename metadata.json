@@ -2,5 +2,7 @@
   "name": "NovaBrowser",
   "description": "Lightweight Xbox 360 RGH/JTAG web browser powered by NetSurf 3.11 targeting NovaBrowser.xex",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

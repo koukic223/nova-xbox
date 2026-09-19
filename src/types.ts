@@ -1,8 +1,8 @@
-export interface HistoryItem {
+export interface Bookmark {
   id: string;
-  url: string;
   title: string;
-  timestamp: number;
+  url: string;
+  createdAt: number;
 }
 
 export interface BrowserTab {

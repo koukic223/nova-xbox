@@ -6,12 +6,14 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { NavigationBar } from './components/NavigationBar';
 import { BrowserViewport } from './components/BrowserViewport';
+import { BookmarkManager } from './components/BookmarkManager';
 import { Compass, X, Plus } from 'lucide-react';
 
 export default function App() {
   const [history, setHistory] = useState<string[]>(['about:home']);
   const [historyIndex, setHistoryIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isBookmarksOpen, setIsBookmarksOpen] = useState<boolean>(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
 
   const currentUrl = history[historyIndex] || 'about:home';
@@ -98,6 +100,13 @@ export default function App() {
         return;
       }
 
+      // Ctrl + B or Cmd + B: Toggle Bookmarks
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        setIsBookmarksOpen((prev) => !prev);
+        return;
+      }
+
       // Alt + Home: Navigate Home
       if (e.altKey && e.key === 'Home') {
         e.preventDefault();
@@ -178,13 +187,15 @@ export default function App() {
         </div>
       </header>
 
-      {/* Navigation Toolbar (Address bar + Back, Forward, Refresh) */}
+      {/* Navigation Toolbar (Address bar + Back, Forward, Refresh, Bookmarks) */}
       <NavigationBar
         currentUrl={currentUrl}
         canGoBack={canGoBack}
         canGoForward={canGoForward}
         isLoading={isLoading}
         inputRef={addressInputRef}
+        isBookmarksOpen={isBookmarksOpen}
+        onToggleBookmarks={() => setIsBookmarksOpen((prev) => !prev)}
         onNavigate={handleNavigate}
         onBack={handleBack}
         onForward={handleForward}
@@ -199,6 +210,14 @@ export default function App() {
         onNavigate={handleNavigate}
         onLoadStart={handleLoadStart}
         onLoadEnd={handleLoadEnd}
+      />
+
+      {/* Bookmarks Manager Modal */}
+      <BookmarkManager
+        currentUrl={currentUrl}
+        isOpen={isBookmarksOpen}
+        onClose={() => setIsBookmarksOpen(false)}
+        onNavigate={handleNavigate}
       />
     </div>
   );

@@ -209,7 +209,10 @@ export const BrowserViewport: React.FC<BrowserViewportProps> = ({
             <span>Ctrl+L</span>
             <span className="text-zinc-600">Address</span>
             <span className="text-zinc-700">&bull;</span>
-            <span>F5 / Ctrl+R</span>
+            <span>Ctrl+B</span>
+            <span className="text-zinc-600">Bookmarks</span>
+            <span className="text-zinc-700">&bull;</span>
+            <span>F5</span>
             <span className="text-zinc-600">Reload</span>
           </span>
           <span className="hidden sm:inline-flex items-center gap-1.5 text-zinc-400 pl-2 border-l border-zinc-800">

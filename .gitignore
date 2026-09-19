@@ -1,8 +1,83 @@
+# =======================================================
+# NovaBrowser - Xbox 360 (RGH/JTAG) & NetSurf 3.11
+# Target: NovaBrowser.xex
+# =======================================================
+
+# Visual Studio & Windows Toolchain artifacts
+.vs/
+*.suo
+*.user
+*.userosv
+*.sln.docstates
+*.opensdf
+*.sdf
+*.ipch
+*.VC.db
+*.VC.opendb
+Debug/
+Release/
+x64/
+x86/
+Xbox360/
+
+# CMake artifacts
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile.cmake
+install_manifest.txt
+*.dir/
+
+# Compiled Object Files & Static/Dynamic Libraries
+*.o
+*.obj
+*.d
+*.a
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.idb
+
+# Xbox 360 Executables & Packages (Do not commit binary output)
+*.xex
+*.pe
+*.elf
+*.bin
+NovaBrowser.xex
+
+# Temporary, Cache, and Log files
+*.log
+*.tmp
+*.cache
+*.bak
+*.orig
+*~
+
+# OS Specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# AI Studio / Web / Node artifacts (if applicable)
 node_modules/
-build/
 dist/
 coverage/
-.DS_Store
-*.log
-.env*
+.env
+.env.local
+.env.*.local
 !.env.example
+
+# =======================================================
+# CRITICAL: Preserve the work/ directory and source files!
+# =======================================================
+!/work/
+!/work/**
+# Ignore only generated build folders inside work components
+work/**/build*/
+work/**/*.o
+work/**/*.obj
+work/**/*.a
+work/**/*.lib
+work/**/*.d
+work/**/.vs/
