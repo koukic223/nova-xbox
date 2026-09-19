@@ -9,7 +9,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Globe,
-  Bookmark as BookmarkIcon
+  Bookmark as BookmarkIcon,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 interface NavigationBarProps {
@@ -19,7 +20,9 @@ interface NavigationBarProps {
   isLoading: boolean;
   inputRef?: React.RefObject<HTMLInputElement | null>;
   isBookmarksOpen?: boolean;
+  isSettingsOpen?: boolean;
   onToggleBookmarks: () => void;
+  onToggleSettings: () => void;
   onNavigate: (url: string) => void;
   onBack: () => void;
   onForward: () => void;
@@ -34,7 +37,9 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
   isLoading,
   inputRef,
   isBookmarksOpen,
+  isSettingsOpen,
   onToggleBookmarks,
+  onToggleSettings,
   onNavigate,
   onBack,
   onForward,
@@ -202,6 +207,20 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({
           }`}
         >
           <BookmarkIcon className="w-4 h-4" />
+        </button>
+
+        <button
+          id="btn-nav-settings"
+          type="button"
+          onClick={onToggleSettings}
+          title="Settings (Ctrl+, or Y)"
+          className={`p-2 rounded-md transition-colors ${
+            isSettingsOpen
+              ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30'
+              : 'text-zinc-300 hover:text-white hover:bg-zinc-800'
+          }`}
+        >
+          <SettingsIcon className="w-4 h-4" />
         </button>
 
         <a

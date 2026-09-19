@@ -7,14 +7,66 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { NavigationBar } from './components/NavigationBar';
 import { BrowserViewport } from './components/BrowserViewport';
 import { BookmarkManager } from './components/BookmarkManager';
-import { Compass, X, Plus } from 'lucide-react';
+import { SettingsModal, DEFAULT_SETTINGS, SETTINGS_STORAGE_KEY } from './components/SettingsModal';
+import { BrowserSettings } from './types';
+import { Compass, X, Plus, Settings as SettingsIcon } from 'lucide-react';
 
 export default function App() {
-  const [history, setHistory] = useState<string[]>(['about:home']);
+  const [settings, setSettings] = useState<BrowserSettings>(() => {
+    try {
+      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (saved) {
+        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      }
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_SETTINGS;
+  });
+
+  const getInitialStartupUrl = (): string => {
+    if (settings.startupPage === 'about:blank') return 'about:blank';
+    if (settings.startupPage === 'custom' && settings.customStartupUrl) {
+      return settings.customStartupUrl;
+    }
+    return 'about:home';
+  };
+
+  const [history, setHistory] = useState<string[]>([getInitialStartupUrl()]);
   const [historyIndex, setHistoryIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync settings with localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [settings]);
+
+  // Handle Clear Cache on Exit beforeunload simulation
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (settings.clearCacheOnExit) {
+        try {
+          sessionStorage.clear();
+          // Purge transient browser cache markers
+          localStorage.removeItem('novabrowser_temp_cache');
+        } catch {
+          // Ignore
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [settings.clearCacheOnExit]);
 
   const currentUrl = history[historyIndex] || 'about:home';
   const canGoBack = historyIndex > 0;
@@ -59,12 +111,31 @@ export default function App() {
     }, 800);
   }, [currentUrl]);
 
-  // Return to home start page
+  // Return to home start page (using configured startupPage if home)
   const handleHome = useCallback(() => {
-    if (currentUrl !== 'about:home') {
-      handleNavigate('about:home');
+    let targetHome = 'about:home';
+    if (settings.startupPage === 'about:blank') {
+      targetHome = 'about:blank';
+    } else if (settings.startupPage === 'custom' && settings.customStartupUrl) {
+      targetHome = settings.customStartupUrl;
     }
-  }, [currentUrl, handleNavigate]);
+    if (currentUrl !== targetHome) {
+      handleNavigate(targetHome);
+    }
+  }, [settings.startupPage, settings.customStartupUrl, currentUrl, handleNavigate]);
+
+  // Purge browser data and reset cache
+  const handleClearBrowserData = useCallback(() => {
+    try {
+      sessionStorage.clear();
+      localStorage.removeItem('novabrowser_temp_cache');
+      localStorage.removeItem('novabrowser_history_v1');
+    } catch {
+      // Ignore
+    }
+    setHistory(['about:home']);
+    setHistoryIndex(0);
+  }, []);
 
   // Global navigation keyboard shortcut listener
   useEffect(() => {
@@ -104,6 +175,13 @@ export default function App() {
       if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
         e.preventDefault();
         setIsBookmarksOpen((prev) => !prev);
+        return;
+      }
+
+      // Ctrl + , (comma) or F10: Toggle Settings
+      if ((e.ctrlKey || e.metaKey) && (e.key === ',' || e.key === '<')) {
+        e.preventDefault();
+        setIsSettingsOpen((prev) => !prev);
         return;
       }
 
@@ -179,15 +257,30 @@ export default function App() {
           </button>
         </div>
 
-        {/* Window controls styling (Xbox/App identity) */}
-        <div className="flex items-center gap-1.5 text-xs text-zinc-400 pr-1">
-          <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 font-mono text-[10px] text-zinc-300">
+        {/* Window controls styling (Xbox/App identity & Settings Button) */}
+        <div className="flex items-center gap-2 text-xs text-zinc-400 pr-1">
+          <button
+            id="btn-header-settings"
+            type="button"
+            onClick={() => setIsSettingsOpen((prev) => !prev)}
+            title="Browser Settings (Ctrl+,)"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+              isSettingsOpen
+                ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/40'
+                : 'bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
+            }`}
+          >
+            <SettingsIcon className="w-3.5 h-3.5" />
+            <span>Settings</span>
+          </button>
+
+          <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 font-mono text-[10px] text-zinc-400">
             NovaBrowser v0.1 &bull; NetSurf 3.11
           </span>
         </div>
       </header>
 
-      {/* Navigation Toolbar (Address bar + Back, Forward, Refresh, Bookmarks) */}
+      {/* Navigation Toolbar (Address bar + Back, Forward, Refresh, Bookmarks, Settings) */}
       <NavigationBar
         currentUrl={currentUrl}
         canGoBack={canGoBack}
@@ -195,7 +288,9 @@ export default function App() {
         isLoading={isLoading}
         inputRef={addressInputRef}
         isBookmarksOpen={isBookmarksOpen}
+        isSettingsOpen={isSettingsOpen}
         onToggleBookmarks={() => setIsBookmarksOpen((prev) => !prev)}
+        onToggleSettings={() => setIsSettingsOpen((prev) => !prev)}
         onNavigate={handleNavigate}
         onBack={handleBack}
         onForward={handleForward}
@@ -218,6 +313,15 @@ export default function App() {
         isOpen={isBookmarksOpen}
         onClose={() => setIsBookmarksOpen(false)}
         onNavigate={handleNavigate}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        settings={settings}
+        onClose={() => setIsSettingsOpen(false)}
+        onUpdateSettings={setSettings}
+        onClearBrowserData={handleClearBrowserData}
       />
     </div>
   );
